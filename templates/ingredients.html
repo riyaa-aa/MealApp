@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'css/main.css' %}">
+
+{% if user.is_authenticated %}
+    <h1>Ingredients</h1> 
+
+    <form id="ingredient_form"> 
+    {% csrf_token %}
+        {% for meal in mealIng %}
+            {% for ingredient in meal.all %}
+            <!-- data attribute that contains the id of the thing you want to modify
+        -->
+                <p><div style="margin-left: 20px;">
+                    <input type="checkbox" data-user_ingredient_id="{{ingredient.id}}" class="ing_checkbox"> 
+                    &nbsp;&nbsp;&nbsp;{{ingredient.ingredient.name}}
+                </div></p>
+            {% endfor %}
+        {% endfor %}
+    </form>
+
+    
+
+    
+
+{% else %}
+    <p class="loggedOut">Please Login <a href="/login">here!</a></p>
+{% endif %}
+
+<script src="{% static 'js/ingredients.js' %}"></script>
+
+{% endblock content%} 

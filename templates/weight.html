@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Weight Tracker
+{% endblock %}
+
+{% block content %}
+
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'css/main.css' %}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js"></script>
+
+<div>
+    <canvas id="weightGraph" style="width: 100px; height: 100px;"></canvas>
+    <script>
+    const config = {
+        type: 'line',
+        data: data,
+        options: {}
+    };
+    const labels = [
+        'January',
+        'February',
+        'March',
+        'April',
+        'May',
+        'June',
+    ];
+    const data = {
+    labels: labels,
+    datasets: [{
+        label: 'My First dataset',
+        backgroundColor: 'rgb(255, 99, 132)',
+        borderColor: 'rgb(255, 99, 132)',
+        data: [0, 10, 5, 2, 20, 30, 45],
+    }]
+    };
+    // === include 'setup' then 'config' above ===
+  
+    var myChart = new Chart(
+      document.getElementById('myChart'),
+      config
+    );
+    </script>
+</div>
+
+<div style="height: 300px; width: 300px;">
+    <canvas id="myChart" width="100" height="100"></canvas>
+    <script>
+    var ctx = document.getElementById('myChart').getContext('2d');
+    var myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [{% for w in weights %} '{{w.time}}', {% endfor %}],
+            datasets: [{
+                label: 'Weight (kg)',
+                data: [{% for w in weights %} '{{w.weight}}',{% endfor %}],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 159, 64, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    </script>
+</div>
+
+{% if user.is_authenticated %}
+
+    
+    <form method = "post" action = "/weight/" style="margin-left: 20px; margin-top: 20px"> {%csrf_token%}
+        <div class = "input-group mb-3" style = text-align:center>
+            <div class = "input-group-prepend">
+                <button type="submit" name="save" class = "btn btn-success">Enter today's weight:</button>
+            </div>
+            {{ form.dailyweight }}
+        </div>
+    </form>
+
+    {% for w in user.weight.all %}
+
+        <p>{{w.weight}}</p>
+        <p>{{user.username}}</p>
+        <p>{{w.time}}</p>
+
+    {% endfor %}
+
+{% else %}
+    <p class="loggedOut">Please Login <a href="/login">here!</a></p>
+{% endif %}
+
+{% endblock %}

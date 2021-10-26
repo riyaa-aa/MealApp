@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{%block title%}
+Login Page
+{% endblock %}
+
+{% load crispy_forms_tags %}
+
+{%block content%}
+<style>
+  h2 {
+    text-align: center;
+    color: rgb(3, 97, 11);
+    font-weight: 500;
+    font-weight: bold;
+    font-size: 300%;
+    padding: 20px;
+  }
+  body {
+    margin-left: 400px;
+    margin-right: 400px;
+  }
+  .createNew a {
+    color: green;
+  }
+  .createNew a:hover {
+    color: darkgreen;
+  }
+</style>
+
+<h2>Log In</h2>
+<body>
+  <form method="post" class = "form-group"> {% csrf_token %}
+    {{ form|crispy }}
+    <br>
+    <button type="submit" class = "btn btn-success">Log In</button>
+  </form>
+  <br>
+  <p class = "createNew">Don't have an account? Create one <a href="/signup">here!</a></p>
+</body>
+
+{% endblock %}

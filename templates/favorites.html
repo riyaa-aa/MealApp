@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'css/main.css' %}">
+
+{% if user.is_authenticated%}
+
+    <!--<style>
+        h1 {
+        color: rgb(3, 97, 11);
+        font-weight: 500;
+        font-weight: bold;
+        font-size: 300%;
+        padding: 20px;
+        margin-right: 300px;
+        margin-left: 300px;
+        text-align: center;
+        margin-top: 0px;
+        }
+    </style>-->
+
+        <h1>Favorites</h1> 
+
+        <h2 style="text-align: center;">{{numFaves}} meals</h2>
+
+        <br>
+
+        <div class="container">
+            <div class="row">
+                
+                {% for faveMeal in new %}
+
+                    <div class="col-sm">
+                        <p style="text-align: center; font-size: 20px; font-weight: bold;">{{faveMeal.name}}</p>
+                        <p>
+                            <a href="/browse/{{faveMeal.id}}">
+                                <img 
+                                style = 
+                                "width:300px; 
+                                height:300px; 
+                                object-fit:cover; 
+                                display: block; 
+                                margin-left: auto; 
+                                margin-right: auto;"
+                                src="{{faveMeal.image.url}}">
+                            </a>
+                        </p>
+                        <p style="text-align: center;">
+                            <button class="btn btn-outline-success" id="fav_add">
+                                <a href="{% url 'favorite_add' faveMeal.id%}">
+                                    Remove
+                                </a>
+                            </button>
+                        </p>
+                    </div>
+
+                {% endfor %}
+            </div>
+        </div>
+
+
+{% else %}
+    <p class="loggedOut">Please Login <a href="/login">here!</a></p>
+{% endif %}
+{% endblock content%} 
+

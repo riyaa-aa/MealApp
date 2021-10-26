@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% load crispy_forms_tags %}
+
+{% load static %}
+
+{% block title %}Sign Up{% endblock %}
+
+{% block content %}
+
+<style>
+  h2 {
+    text-align: center;
+    color: rgb(3, 97, 11);
+    font-weight: 500;
+    font-weight: bold;
+    font-size: 300%;
+    padding: 20px;
+  }
+  body {
+    margin-left: 100px;
+    margin-right: 300px;
+  }
+  form {
+    margin-left: 100px;
+  }
+  p {
+    margin-left: 100px;
+  }
+  p a {
+    color: green;
+  }
+  p a:hover {
+    color: darkgreen;
+  }
+</style>
+
+  <h2>Sign up</h2>
+  <body>
+    <form method="post" class = "form-group"> {% csrf_token %}
+      {{ form | crispy }}
+      <button type="submit" class = "btn btn-success">Sign Up</button>
+    </form>
+    <br>
+    <p>Already have an account? Login <a href="/login">here!</a></p>
+  </body>
+{% endblock %}

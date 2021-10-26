@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block scripts %}
+
+<script type="text/javascript">
+    function randomize(){
+        const xHTTP = new XMLHttpRequest();
+        xHTTP.onload = function(){
+            const xmlDoc = xHTTP.responseXML;
+            const CD = xmlDoc.getElementsByTagName("CD");
+            myFunction(CD);
+        }
+        xHTTP.open("GET",)
+    }
+</script>
+
+{% endblock scripts %}
+
+{% block content %}
+
+{% load static meal_helpers %}
+
+<link rel="stylesheet" href="{% static 'css/main.css' %}">
+<link rel="stylesheet" href="{% static 'js/main.js' %}">
+
+{% if user.is_authenticated %}
+
+  <hr>
+  
+  <h1 title = "Welcome, {{ user.username }}!">HOME</h1>
+
+  <hr>
+
+  <h2>{{slogan}}</h2>
+
+  <div class = "meal_info">
+    <div class="container">
+        <div class="row">
+                    <div class="col">
+                        <p style="font-size: 20px; font-weight: bold; color:#444444">{{thisMeal.name}}</p>
+                            <div class="containerHover">
+                                <img style=
+                                "width:300px; 
+                                height:300px; 
+                                object-fit:cover;" 
+                                src="{{thisMeal.image.url}}"
+                                class="imgHover">
+                                <div class="middle">
+                                    <div class="middleLink"><a href="/browse/{{thisMeal.id}}">See More</a></div>
+                                </div>
+                            </div>
+                        <p>
+                            <div class="divider"></div>
+                            <a href = "{% url 'home' %}?randomize=1" 
+                            style="
+                            text-decoration:none; 
+                            color:black"
+                            title = "Randomize">
+                                <i class="fas fa-sync fa-lg"></i>
+                            </a>
+
+                            
+                            <div class="divider"></div>
+                            <a href="{% url 'favorite_add' thisMeal.pk %}" 
+                            style="
+                            text-decoration:none; 
+                            color:black;"
+                            title = "Favorite">
+                                {% meal_is_user_favorite thisMeal.pk request.user.pk as is_favorite %}
+                                <i class="{% if is_favorite %} fas {% else %} far {% endif %} fa-heart fa-lg"></i>
+                            </a>
+
+                            <div class="divider"></div>
+                            <a href="{% url 'ingredients_add' thisMeal.pk %}" 
+                            style="
+                            text-decoration:none; 
+                            color:black"
+                            title = "Save">
+                                {% meal_is_user_saved thisMeal.pk request.user.pk as is_saved %}
+                                <i class="{% if is_saved %} fas {% else %} far {% endif %} fa-check-circle fa-lg"></i>
+                            </a>
+                        </p>
+                    </div>
+                    <div class="col" style = "text-align: left;">
+                        <p style="color:#444444; font-size: 18px; font-weight: bold;">
+                            Ingredients:
+                        </p>
+                        {{thisMeal.no_zero_ing | linebreaksbr }}
+                    </div>
+                    <div class="w-100"></div>
+                    <br>
+                    <hr>
+                    <!--start style-->
+                    <button 
+                    class="btn btn-outline-success" 
+                    type="button" 
+                    data-bs-toggle="collapse" 
+                    data-bs-target="#collapseExample" 
+                    aria-expanded="false" 
+                    aria-controls="collapseExample" 
+                    style="text-align: center;">
+                        Method
+                      </button>
+                    </p>
+                    <div class="collapse" id="collapseExample">
+                      <div class="card card-body" style="background-color: lightgoldenrodyellow; text-align: left;">
+                        {{thisMeal.no_zero_met | linebreaksbr}}
+                      </div>
+                    </div>
+                    <!--method-->
+                    <!--{{n.createList}}-->
+          
+        </div>
+    </div>
+    
+  </div>
+
+  
+
+  <p> Logout <a href="/logout" style="color:green">here!</a></p>
+
+{% else %}
+    <p class="loggedOut">Please Login <a href="/login">here!</a></p>
+{% endif %}
+
+{% endblock content%} 

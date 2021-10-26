@@ -1,0 +1,206 @@
+body {
+    /*background-color: rgb(214, 233, 210);
+    background-color: lightgoldenrodyellow;
+    background-color: rgb(237, 238, 237);*/
+    background-color: lightgoldenrodyellow;
+}
+  
+h1 {
+    /*color: #178150;*/
+    color: #444444;
+    font-weight: 500;
+    font-weight: bold;
+    font-size: 300%;
+    padding: 0px;
+    margin-right: 300px;
+    margin-left: 300px;
+    text-align: center;
+    margin-top: 0px;
+}
+
+h2 {
+    color: #444444;
+    font-size: 150%;
+    margin-right: 200px;
+    margin-left: 200px;
+    text-align: center;
+}
+
+p {
+    color: black;
+}
+
+.imgHover {
+    opacity: 1;
+    display: block;
+    width: 100%;
+    height: auto;
+    transition: .5s ease;
+    backface-visibility: hidden;
+}
+
+.middle {
+    transition: .5s ease;
+    opacity: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.containerHover {
+    position: relative;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    width: 50%;
+}
+
+.containerHover:hover .imgHover {
+    opacity: 0.3;
+}
+
+.containerHover:hover .middle {
+    opacity: 1;
+}
+
+.middleLink {
+    background-color: #178150;
+    color: white;
+    font-size: 16px;
+    padding: 16px 32px;
+}
+
+.middleLink a{
+    text-decoration: none;
+    color: lightgoldenrodyellow;
+}
+
+.middleLink a:hover{
+    color: rgb(211, 211, 170);
+}
+
+#name {
+    font-size: 25px;
+    margin-left: 300px;
+    margin-right: 300px;
+}
+
+#ingredients {
+    margin-left: 300px;
+    margin-right: 300px;
+}
+
+.meal_info {
+    margin-left: 20px;
+    margin-right: 20px;
+    padding: 10px;
+    text-align: center;
+}
+
+.loggedOut {
+    text-align: center;
+    font-size: 30px;
+    padding-top: 300px;
+}
+
+.loggedOut a {
+    color: green;
+}
+
+.loggedOut a:hover {
+    color: darkgreen;
+
+}
+
+#module {
+    font-size: 1rem;
+    line-height: 1.5;
+    text-align: left; 
+    margin-left: 100px
+}
+
+#fav_add a{
+    color: #178150;
+    text-decoration: none;
+}
+
+#fav_add a:hover {
+    color:lightgoldenrodyellow;
+}
+
+.divider{
+    width:15px;
+    height:auto;
+    display:inline-block;
+}
+
+.button-icons {
+    width: 1.25em;
+}
+  
+  /* The individual icons */
+.icon {
+    fill: rgb(0, 0, 0);
+}
+  
+  /* We hide the checkmark by default */
+#checkmark {
+    visibility: hidden;
+}
+
+.invisible {
+    display: none;
+}
+
+.ing_checkbox {
+    -webkit-appearance: none;
+	background-color: #e7fcf2;
+	border: 1px solid #1c8454;
+	box-shadow: 0 1px 2px #0f5534, inset 0px -15px 10px -12px rgba(0,0,0,0.05);
+	padding: 7px;
+	border-radius: 3px;
+	display: inline-block;
+	position: relative;
+}
+
+.ing_checkbox:active, .regular-checkbox:checked:active {
+	box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0px 1px 3px rgba(0,0,0,0.1);
+}
+
+.ing_checkbox:checked {
+	background-color: #e9ecee;
+	border: 1px solid #adb8c0;
+	box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0px -15px 10px -12px rgba(0,0,0,0.05), inset 15px 10px -12px rgba(255,255,255,0.1);
+	color: #99a1a7;
+}
+
+.ing_checkbox:checked:after {
+	content: '\2714';
+	font-size: 14px;
+	position: absolute;
+	top: 0px;
+	left: 3px;
+	color: #99a1a7;
+}
+
+/*#module #collapseExample.collapse:not(.show) {
+    display: block;
+    height: 3rem;
+    overflow: hidden;
+}
+
+#module #collapseExample.collapsing {
+    height: 3rem;
+}
+
+#module a.collapsed::after {
+    content: '+ Show More';
+}
+
+#module a:not(.collapsed)::after {
+    content: '- Show Less';
+}*/
+

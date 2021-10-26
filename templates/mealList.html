@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'css/main.css' %}">
+
+<p style = "margin-top:10px">
+    <button class="btn btn-success">
+        <a href="/browse" 
+        style="color: white; text-decoration: unset;"
+        title="Back to Browse">
+            Back to Browse
+        </a>
+    </button>
+    <button class="btn btn-success">
+        <a href="/home" 
+        style="color: white; text-decoration: unset;"
+        title="Go to Home">
+            Go to Home
+        </a>
+    </button>
+</p>
+
+<br>
+
+
+
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <p style=
+                "text-align: center; 
+                font-size: 28px; 
+                font-weight: bold;">
+                {{mealObj.name}}
+            </p>
+            <p>
+                <img style = 
+                    "width:300px; 
+                    height:300px; 
+                    object-fit:cover; 
+                    display: block; 
+                    margin-left: auto; 
+                    margin-right: auto;"
+                    src="{{mealObj.image.url}}">
+            </p>
+        </div>
+        <div class="col" style="text-align: left;">
+            <h2 style="text-align: left;">Ingredients:</h2>
+            <p style = "text-align: left;">
+                    {{mealObj.no_zero_ing | linebreaksbr}}
+            </p>
+        </div>
+    </div>
+    <div class = "row">
+        <p style="color: #178150; font-size: 150%; text-align: left; font-weight: bold;">Method:</p>
+        <p style="text-align: left;">
+            {{mealObj.no_zero_met | linebreaksbr}}
+        </p>
+    </div>
+</div>
+
+{% endblock %}
