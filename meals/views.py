@@ -50,26 +50,31 @@ def home_view(request):
 
     randomize = request.GET.get("randomize") #Query string
     user_info = get_user_info(request.user)
+    user_restriction_ids = user_info.restrictions.values_list("pk",flat=True)
 
-    meals = Meal.objects.all() 
-    meal_count = meals.count()
+    meals = Meal.objects.filter(restrictions__pk__in=user_restriction_ids).distinct()
+    print(meals)
 
-    meal_arr = []
-    pk_arr = []
-    first_meal = Meal.objects.first()
-    first_pk = first_meal.pk
-    str_meal_arr = ""
+    # meal_count = meals.count()
+
+    #test
+    # meal_arr = []
+    # pk_arr = []
+    # first_meal = Meal.objects.first()
+    # first_pk = first_meal.pk
+    # str_meal_arr = ""
     
-    for i in range(meal_count):
-        meal_arr.append(meals.get(pk=first_pk+i))
-        pk_arr.append(first_pk+i)
+    # for i in range(meal_count):
+    #     meal_arr.append(meals.get(pk=first_pk+i))
+    #     pk_arr.append(first_pk+i)
     
-    str_meal_arr = ' '.join([str(item) for item in meal_arr])
+    # str_meal_arr = ' '.join([str(item) for item in meal_arr])
 
-    test_arr = [3,6,2,8,4,9,1,10,5]
-    test_meals = ["this", "is", "a", "test", "to", "see", "if", "this", "works"]
+    # test_arr = [3,6,2,8,4,9,1,10,5]
+    # test_meals = ["this", "is", "a", "test", "to", "see", "if", "this", "works"]
 
-    get_ordered_pk = order_by_pk(test_meals,test_arr)
+    # get_ordered_pk = order_by_pk(test_meals,test_arr)
+    #endtest
 
     #If the user exists and they have a last meal.
     last_meal = None
@@ -80,7 +85,10 @@ def home_view(request):
         meals = meals.order_by("pk") #Order meals by id
         if user_info and user_info.lastMeal: 
             #meals = meals.filter(pk=user_info.lastMeal.pk) 
-            last_meal = Meal.objects.filter(pk=user_info.lastMeal.pk).first()
+            print(meals)
+            last_meal = meals.filter(pk=user_info.lastMeal.pk).first()
+            print("gotit")
+            print(last_meal)
         
     now = datetime.now() + timedelta(hours=8) #To set to the right time.
 
@@ -117,13 +125,6 @@ def home_view(request):
     user_info.lastMeal=this_meal #the first meal in 'meals' will be the meal displayed, i.e. the one that needs to be stored to come back to.
     user_info.save()
 
-    vegan_meals = meals.filter(vegan = True)
-    veg_meals = meals.filter(vegetarian = True)
-    pesc_meals = meals.filter(pescatarian = True)
-    no_nut_meals = meals.exclude(nuts = True)
-    no_gluten_meals = meals.filter(glutenfree = True)
-    no_lactose_meals = meals.exclude(lactose = True)
-
     #testing migration file
     ingredients_list = Meal.objects.values_list('ingredients')
 
@@ -132,17 +133,11 @@ def home_view(request):
         "time": now, 
         "today4am": today4am,
         "thisMeal": this_meal,
-        "vegan":vegan_meals,
-        "veg":veg_meals, 
-        "pesc":pesc_meals,
-        "noNut":no_nut_meals,
-        "noGluten":no_gluten_meals,
-        "noLactose":no_lactose_meals,
-        "count":meal_count, 
+        # "count":meal_count, 
         "slogan":slogan,
         "ingList":ingredients_list,
-        "test":str_meal_arr,
-        "test2":get_ordered_pk,
+        # "test":str_meal_arr,
+        # "test2":get_ordered_pk,
     }
     
     return render(request, "home.html", my_context)

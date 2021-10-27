@@ -26,23 +26,24 @@ from django.db.models.fields import CharField
         #two statuses: default status (new) which shows up on the page when no one has interacted with it
         #other status (purchased) 
 
+class Restriction(models.Model):
+    description = models.CharField(max_length=300)
+
+    def __str__(self):
+        return "{}".format(self.description)
+
 class Meal(models.Model):
     name = models.CharField(max_length=200)
     image = models.ImageField(upload_to = "media/")
     ingredients = models.TextField()
     method = models.TextField()
-    vegan = models.BooleanField(default=False)
-    vegetarian = models.BooleanField(default=False)
-    pescatarian = models.BooleanField(default=False)
-    glutenfree = models.BooleanField(default=False)
-    lactose = models.BooleanField(default=False)
-    nuts = models.BooleanField(default=False)
     totalCalories = models.IntegerField(null=True)
     breakfast = models.BooleanField(default=False)
     lunch = models.BooleanField(default=False)
     dinner = models.BooleanField(default=False)
     favorited = models.ManyToManyField(User, related_name="faveUser", default=None, blank=True)
     saved = models.ManyToManyField(User, related_name="saveUser", default=None, blank=True)
+    restrictions = models.ManyToManyField(Restriction, related_name="meal_restrictions", blank=True)
 
     def __str__(self):
         return self.name
@@ -115,28 +116,10 @@ class UserInfo(models.Model):
     ]
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="uInfo")
     lastMeal = models.ForeignKey(Meal, on_delete=models.CASCADE, related_name="lastMealViewed", null=True)
-    vegan = models.BooleanField(default=False)
-    vegetarian = models.BooleanField(default=False)
-    pescatarian = models.BooleanField(default=False)
-    lactoseIntolerant = models.BooleanField(default=False)
-    glutenAllergy = models.BooleanField(default=False)
-    nutAllergy = models.BooleanField(default=False)
-    restrictions = models.ManyToManyField(settings.AUTH_USER_MODEL, choices=RESTRICTIONS, related_name="restrictions_user", default=None, blank=True)
+    restrictions = models.ManyToManyField(Restriction, related_name="user_restrictions", blank=True)
 
     def __str__(self):
         return "{}".format(self.user)
-
-class Restrictions(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="uRestr", null=True)
-    RESTRICTIONS = [
-        ('vegan', 'vegan'),
-        ('vegetarian', 'vegetarian'),
-        ('pescatarian', 'pescatarian'),
-        ('gluten allergy', 'gluten allergy'),
-        ('lactose intolerant', 'lactose intolerant'),
-        ('nut allergy', 'nut allergy'),
-    ]
-    dietRestr = models.CharField(max_length=300, choices=RESTRICTIONS, null=True)
 
 
 
