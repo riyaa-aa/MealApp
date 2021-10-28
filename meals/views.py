@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from django.http import HttpResponse, request
 from django.views.generic.list import ListView
 from django.contrib.auth.decorators import login_required, permission_required, user_passes_test
+from django.db.models import Q
 
 def get_user_info(user):
     user_info,created = UserInfo.objects.get_or_create(user=user) #Creating the user info object if it doesn't exist and then returning it.
@@ -49,11 +50,21 @@ def order_by_pk(arr, pk_arr):
 def home_view(request):
 
     randomize = request.GET.get("randomize") #Query string
+
     user_info = get_user_info(request.user)
     user_restriction_ids = user_info.restrictions.values_list("pk",flat=True)
 
-    meals = Meal.objects.filter(restrictions__pk__in=user_restriction_ids).distinct()
+    restriction_Q = Q()
+    meals = Meal.objects.all()
+
+    for id in user_restriction_ids:
+        restriction_Q = restriction_Q & Q(restrictions__pk=id)
+        meals = meals.filter(restrictions__id=id)
+
+    # meals = Meal.objects.filter(restrictions__pk__in=user_restriction_ids).distinct()
+    # meals = Meal.objects.filter(restriction_Q).distinct()
     print(meals)
+    print(meals.query)
 
     # meal_count = meals.count()
 
