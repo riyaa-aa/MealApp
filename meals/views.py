@@ -1,6 +1,6 @@
 from django.db.models.fields.files import ImageField
 from django.http.response import HttpResponseRedirect
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from .models import *
 from .forms import *
 import random
@@ -233,21 +233,23 @@ def meal_list_view(response, pk):
     return render(response, "mealList.html", my_context)
 
 @login_required 
-def settings_view(response):
-    form = Restrictions()
-    if response.method == "POST":
-        form = Restrictions(response.POST)
+def settings_view(request):
+    form = Restrictions(instance=request.user.uInfo) # making sure that pre-saved restrictions appear
+    if request.method == "POST":
+        form = Restrictions(request.POST,instance=request.user.uInfo)
         if form.is_valid():
-            n = form.cleaned_data["dietRestr"]
-            r = Restrictions(dietRestr = n)
-            r.save()
-            response.user.dietRestr.add(r)
+            user_info = form.save(commit=False) # prevents from saving to database since we don't know the user yet
+            print(user_info)
+            user_info.user = request.user
+            user_info.save()
+            form.save_m2m()
+            return redirect('home')
         else:
-            form = Restrictions()
+            print("form isn't valid:", form.errors)
     my_context = {
         "form":form,
     }
-    return render(response, "settings.html", my_context)
+    return render(request, "settings.html", my_context)
 
 @login_required 
 def navbar_view(request):

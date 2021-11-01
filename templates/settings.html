@@ -23,10 +23,10 @@
 {% if user.is_authenticated %}
     <h1>Settings</h1>
     
-    <form method = "post" action = "/settings/" style="margin-left: 20px; margin-top: 20px"> {%csrf_token%}
+    <form method="post" action="/settings/" style="margin-left: 20px; margin-top: 20px"> {%csrf_token%}
         <p>Choose the restriction that applies</p>
-            {{ form.dietRestr }}
-            <button type="submit" name="save" class = "btn btn-success">Save</button>
+            {{ form.as_p }}
+            <button type="submit" name="save" class="btn btn-success">Save</button>
     </form>
     <form>
         Dietary Strictness

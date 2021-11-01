@@ -119,7 +119,7 @@ class UserInfo(models.Model):
     restrictions = models.ManyToManyField(Restriction, related_name="user_restrictions", blank=True)
 
     def __str__(self):
-        return "{}".format(self.user)
+        return "{}{}".format(self.user, self.restrictions)
 
 
 
