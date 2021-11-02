@@ -7,6 +7,7 @@ from datetime import timedelta
 
 from django.db.models.deletion import CASCADE
 from django.db.models.enums import Choices
+from django.core import validators
 
 import tkinter
 from tkinter import *
@@ -27,7 +28,7 @@ from django.db.models.fields import CharField
         #other status (purchased) 
 
 class Restriction(models.Model):
-    description = models.CharField(max_length=300)
+    description = models.CharField(max_length=300, unique=True)
 
     def __str__(self):
         return "{}".format(self.description)
@@ -98,9 +99,13 @@ class UserIngredient(models.Model):
 
 class Weight(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="weight", null=True)
-    weight = models.FloatField()
+    weight = models.FloatField(validators=[validators.MinValueValidator(20), validators.MaxValueValidator(500)])
     date = models.DateField(default=datetime.date.today)
-    time = models.DateTimeField(default=datetime.datetime.now)
+
+    class Meta:
+        unique_together = [
+            ['user','date']
+        ]
 
     #def __str__(self):
         #return self.weight

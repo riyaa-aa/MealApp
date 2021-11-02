@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from django.http import HttpResponse, request
 from django.views.generic.list import ListView
 from django.contrib.auth.decorators import login_required, permission_required, user_passes_test
+from django.utils import timezone
 
 def get_user_info(user):
     user_info,created = UserInfo.objects.get_or_create(user=user) #Creating the user info object if it doesn't exist and then returning it.
@@ -21,8 +22,6 @@ def order_by_pk(arr, pk_arr):
     min_index = 0
     arr = arr
     pk_arr = pk_arr
-
-
 
     for i in range(len(pk_arr)):
         min_index = i
@@ -79,7 +78,7 @@ def home_view(request):
     # get_ordered_pk = order_by_pk(test_meals,test_arr)
     #endtest
 
-    #If the user exists and they have a last meal.
+    # If the user exists and they have a last meal.
     last_meal = None
 
     if randomize:
@@ -142,30 +141,31 @@ def home_view(request):
     return render(request, "home.html", my_context)
 
 @login_required 
-def weight_view(response):
-    weights = Weight.objects.all
-    form = WeightTracker()
+def weight_view(request):
+    weights = Weight.objects.all()
+    todays_date = timezone.now().date()
+    todays_weight = Weight.objects.filter(user=request.user, date=todays_date).first()
+    form = WeightTracker(instance=todays_weight)
 
-    if response.method == "POST":
-        form = WeightTracker(response.POST)
-        now = datetime.now() + timedelta(hours=8)
+    if request.method == "POST":
+        form = WeightTracker(request.POST, instance=todays_weight)
+            # code for making them able to edit the date?
         if form.is_valid():
-            n = form.cleaned_data["dailyweight"]
-            #d = form.cleaned_data["dayTime"]
-            #t = Weight(time=d)
-            #for weight in weights:
-                #if t.time == weight.time:
-                    #y=0
+            user_weight = form.save(commit=False)
+            user_weight.user = request.user
+            user_weight.save()
+            return redirect('weight')
 
-            w = Weight(weight = n, time=now)
-            w.save()
-            response.user.weight.add(w)
-            form = WeightTracker()
-    else:
-        form = WeightTracker()
+            # make this form look like the settings one
+            # when trying to decide if there is an instance of weight there needs to be filter for current user & day
+            # get instance if it exists
         
-    my_context = {"meals": Meal.objects.all, "form": form, "weights": weights}
-    return render(response, "weight.html", my_context)
+    my_context = {
+        "form": form, 
+        "weights": weights,
+        "todays_weight": todays_weight,
+    }
+    return render(request, "weight.html", my_context)
 
 @login_required 
 def ingredients_add(request, id):
@@ -184,16 +184,9 @@ def ingredients_view(request):
         meal.generate_user_ingredients(request.user)
         user_ingredients = UserIngredient.objects.filter(user=request.user, ingredient__meal=meal, status=UserIngredient.STATUS_NEW)
         meal_ingredients.append(user_ingredients)
-    numSaved = saved_meals.count()
-    my_context={"new":saved_meals, "numSaved":numSaved, "mealIng":meal_ingredients}
+    num_saved = saved_meals.count()
+    my_context={"new":saved_meals, "numSaved":num_saved, "mealIng":meal_ingredients}
     return render(request, "ingredients.html", my_context)
-
-def check(request):
-    if 'checks[]' in request.GET:  #<----- 'checks[]'
-      chosen = request.GET.getlist('checks[]')  #<----- 'checks[]'
-      return render('home.html',{'chosen':chosen})
-    else: 
-        return render('home.html',{})
 
 @login_required 
 def favorites_add(request, id):
@@ -239,7 +232,6 @@ def settings_view(request):
         form = Restrictions(request.POST,instance=request.user.uInfo)
         if form.is_valid():
             user_info = form.save(commit=False) # prevents from saving to database since we don't know the user yet
-            print(user_info)
             user_info.user = request.user
             user_info.save()
             form.save_m2m()

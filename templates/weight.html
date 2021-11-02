@@ -6,7 +6,7 @@ Weight Tracker
 
 {% block content %}
 
-{% load static %}
+{% load static bootstrap %}
 
 <link rel="stylesheet" href="{% static 'css/main.css' %}">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js"></script>
@@ -52,7 +52,7 @@ Weight Tracker
     var myChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: [{% for w in weights %} '{{w.time}}', {% endfor %}],
+            labels: [{% for w in weights %} '{{w.date}}', {% endfor %}],
             datasets: [{
                 label: 'Weight (kg)',
                 data: [{% for w in weights %} '{{w.weight}}',{% endfor %}],
@@ -89,16 +89,19 @@ Weight Tracker
 {% if user.is_authenticated %}
 
     
-    <form method = "post" action = "/weight/" style="margin-left: 20px; margin-top: 20px"> {%csrf_token%}
+    <form method = "post" style="margin-left: 20px; margin-top: 20px"> {%csrf_token%}
         <div class = "input-group mb-3" style = text-align:center>
             <div class = "input-group-prepend">
-                <button type="submit" name="save" class = "btn btn-success">Enter today's weight:</button>
+                <button type="submit" name="save" class="btn btn-success">
+                    {% if todays_weight %}Edit{% else %}Enter{% endif %} today's weight:
+                </button>
+                {{ form|bootstrap }}
             </div>
-            {{ form.dailyweight }}
         </div>
+        
     </form>
 
-    {% for w in user.weight.all %}
+    {% for w in weights %}
 
         <p>{{w.weight}}</p>
         <p>{{user.username}}</p>
