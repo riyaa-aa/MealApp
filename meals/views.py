@@ -147,6 +147,18 @@ def weight_view(request):
     todays_weight = Weight.objects.filter(user=request.user, date=todays_date).first()
     form = WeightTracker(instance=todays_weight)
 
+    weight_chart_data = []
+    first_day = None
+    for weight in weights:
+        if not first_day:
+            first_day = weight.date
+        data_element = {
+            'date': (weight.date-first_day).days,
+            'weight': weight.weight,
+        }
+        weight_chart_data.append(data_element)
+    print(weight_chart_data)
+
     if request.method == "POST":
         form = WeightTracker(request.POST, instance=todays_weight)
             # code for making them able to edit the date?
@@ -164,6 +176,7 @@ def weight_view(request):
         "form": form, 
         "weights": weights,
         "todays_weight": todays_weight,
+        "weight_chart_data":weight_chart_data,
     }
     return render(request, "weight.html", my_context)
 

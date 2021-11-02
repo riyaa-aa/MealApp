@@ -52,10 +52,10 @@ Weight Tracker
     var myChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: [{% for w in weights %} '{{w.date}}', {% endfor %}],
+            labels: [{% for w in weight_chart_data %} '{{w.date}}', {% endfor %}],
             datasets: [{
                 label: 'Weight (kg)',
-                data: [{% for w in weights %} '{{w.weight}}',{% endfor %}],
+                data: [{% for w in weight_chart_data %} '{{w.weight}}',{% endfor %}],
                 backgroundColor: [
                     'rgba(255, 99, 132, 0.2)',
                     'rgba(54, 162, 235, 0.2)',
@@ -77,6 +77,12 @@ Weight Tracker
         },
         options: {
             scales: {
+                x: {
+                    ticks: {
+                        stepSize: 1,
+                        count: 30,
+                    }
+                },
                 y: {
                     beginAtZero: true
                 }
