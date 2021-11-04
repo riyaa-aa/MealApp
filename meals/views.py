@@ -81,6 +81,7 @@ def home_view(request):
     #endtest
 
     # If the user exists and they have a last meal.
+    
     last_meal = None
 
     if randomize:

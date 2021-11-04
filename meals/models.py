@@ -8,12 +8,7 @@ from datetime import timedelta
 from django.db.models.deletion import CASCADE
 from django.db.models.enums import Choices
 from django.core import validators
-
-import tkinter
-from tkinter import *
-from tkinter import messagebox
-
-from django.db.models.fields import CharField
+from django.db.models.signals import post_save
 
 # Create your models here.
 
@@ -120,11 +115,14 @@ class UserInfo(models.Model):
         ('nuts', 'nuts'),
     ]
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="uInfo")
-    lastMeal = models.ForeignKey(Meal, on_delete=models.CASCADE, related_name="lastMealViewed", null=True)
+    lastMeal = models.ForeignKey(Meal, on_delete=models.CASCADE, related_name="lastMealViewed", blank=True, null=True)
     restrictions = models.ManyToManyField(Restriction, related_name="user_restrictions", blank=True)
 
     def __str__(self):
-        return "{}{}".format(self.user, self.restrictions)
+        return "{} {}".format(self.user, list(self.restrictions.all().values_list('description',flat=True)))
 
+def save_user_info(sender, instance, **kwargs):
+    UserInfo.objects.get_or_create(user=instance)
 
+post_save.connect(save_user_info, sender=settings.AUTH_USER_MODEL)
 
