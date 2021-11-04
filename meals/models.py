@@ -107,8 +107,8 @@ class Weight(models.Model):
             ['user','date']
         ]
 
-    #def __str__(self):
-        #return self.weight
+    def __str__(self):
+        return "{} {} {}".format(self.user, self.weight, self.date)
 
 class UserInfo(models.Model):
     RESTRICTIONS = [
