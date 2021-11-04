@@ -11,6 +11,8 @@ from django.views.generic.list import ListView
 from django.contrib.auth.decorators import login_required, permission_required, user_passes_test
 from django.utils import timezone
 
+# if you change your restrictions to something that doesnt allow a meal you have in favourites it'll break
+
 def get_user_info(user):
     user_info,created = UserInfo.objects.get_or_create(user=user) #Creating the user info object if it doesn't exist and then returning it.
     return user_info
