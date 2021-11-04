@@ -144,21 +144,37 @@ def home_view(request):
 
 @login_required 
 def weight_view(request):
-    weights = Weight.objects.all()
+    weights = Weight.objects.all().order_by('date')
     todays_date = timezone.now().date()
     todays_weight = Weight.objects.filter(user=request.user, date=todays_date).first()
     form = WeightTracker(instance=todays_weight)
 
     weight_chart_data = []
-    first_day = None
-    for weight in weights:
-        if not first_day:
-            first_day = weight.date
-        data_element = {
-            'date': (weight.date-first_day).days,
-            'weight': weight.weight,
-        }
-        weight_chart_data.append(data_element)
+    # If there is at least one weight entry, create chart data
+    if weights.count() > 0:
+        first_day = weights.first().date
+        last_day = weights.last().date
+        # Find the total number of days in the data span
+        days = (last_day - first_day).days
+        # Keep a running index in the weight data, since it may not exist in every day
+        weight_index = 0
+        # Loop over the range of days, inclusive
+        for days_index in range(days + 1):
+            weight_obj = weights[weight_index]
+            weight_day = (weight_obj.date-first_day).days
+            # If the current day corresponds to the next weight, enter this weight in the chart data
+            if weight_day == days_index:
+                weight = weight_obj.weight
+                weight_index += 1
+            else:
+                # If there is no weight data for this day, put a None value for weight.
+                # This will be converted to null in the template so chartjs ignores the value.
+                weight = None
+            data_element = {
+                'date': days_index,
+                'weight': weight,
+            }
+            weight_chart_data.append(data_element)
     print(weight_chart_data)
 
     if request.method == "POST":

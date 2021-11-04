@@ -21,7 +21,8 @@ Weight Tracker
             labels: [{% for w in weight_chart_data %} '{{w.date}}', {% endfor %}],
             datasets: [{
                 label: 'Weight (kg)',
-                data: [{% for w in weight_chart_data %} '{{w.weight}}',{% endfor %}],
+                data: [{% for w in weight_chart_data %} '{{w.weight|default_if_none:'null'}}',{% endfor %}],
+                spanGaps: true,
                 backgroundColor: [
                     'rgba(255, 99, 132, 0.2)',
                     'rgba(54, 162, 235, 0.2)',
@@ -43,12 +44,6 @@ Weight Tracker
         },
         options: {
             scales: {
-                x: {
-                    ticks: {
-                        stepSize: 1,
-                        count: 30,
-                    }
-                },
                 y: {
                     beginAtZero: true
                 }
