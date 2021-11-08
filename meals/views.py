@@ -145,7 +145,7 @@ def home_view(request):
 
 @login_required 
 def weight_view(request):
-    weights = Weight.objects.all().order_by('date')
+    weights = Weight.objects.filter(user=request.user).order_by('date')
     todays_date = timezone.now().date()
     todays_weight = Weight.objects.filter(user=request.user, date=todays_date).first()
     form = WeightTracker(instance=todays_weight)
@@ -235,9 +235,6 @@ def favorites_view(request):
     numFaves = new.count()
     my_context={"new":new, "numFaves":numFaves}
     return render(request, "favorites.html", my_context)
-
-def check_admin(user):
-    return user.is_superuser
 
 @user_passes_test(check_admin) 
 def browseMeals_view(response):

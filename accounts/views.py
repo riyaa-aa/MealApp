@@ -11,14 +11,20 @@ from .forms import SignUpForm
     #success_url = reverse_lazy('login')
     #template_name = 'registration/signup.html'
 
-def signup(response):
-    if response.method == "POST":
-        form = SignUpForm(response.POST)
+def signup(request):
+    if request.method == "POST":
+        form = SignUpForm(request.POST)
         if form.is_valid():
-            form.save()
-        
-        return redirect("/login")
+            user = form.save()
+            print(user)
+            login(request,user)
+            return redirect('settings')
 
     else:
         form = SignUpForm()
-    return render(response, "registration/signup.html", {"form": form})
+    
+    my_context = {
+        "form": form,
+    }
+
+    return render(request, "registration/signup.html", my_context)

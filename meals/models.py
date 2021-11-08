@@ -121,6 +121,9 @@ class UserInfo(models.Model):
     def __str__(self):
         return "{} {}".format(self.user, list(self.restrictions.all().values_list('description',flat=True)))
 
+def check_admin(user):
+    return user.is_superuser
+
 def save_user_info(sender, instance, **kwargs):
     UserInfo.objects.get_or_create(user=instance)
 

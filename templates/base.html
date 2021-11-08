@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang = "en">
 
-    {% load static %}
+    {% load static meal_helpers %}
 
     <link rel="stylesheet" href="{% static 'css/nav.css' %}">
 
@@ -26,7 +26,9 @@
                 <a href="/ingredients">Ingredients</a>
                 <a href="/favorites">Favorites</a>
                 <a href="/settings">Settings</a>
-                <a href="/browse">Browse Meals</a>
+                {% if request.user.pk|user_is_admin %}
+                    <a href="{% url 'browse' %}">Browse Meals</a>
+                {% endif %}
             </div>
 
         <div class = "main">
