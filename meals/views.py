@@ -54,6 +54,33 @@ def get_filtered_meals():
 
     for id in user_restriction_ids:
         meals = meals.filter(restrictions__id=id)
+    
+    now = datetime.now() + timedelta(hours=8) #To set to the right time.
+
+    today4am = now.replace(hour=4, minute=0, second=0, microsecond=0)
+    today11am = now.replace(hour=11, minute=0, second=0, microsecond=0)
+    today4pm = now.replace(hour=16, minute=0, second=0, microsecond=0)
+    today11pm = now.replace(hour=23, minute=0, second=0, microsecond=0)
+
+    slogan = ""
+
+    if now <= today11am and now > today4am:
+        meals = meals.filter(breakfast=True)
+        slogan = "Your Breakfast:"
+        if last_meal and not last_meal.breakfast:
+            last_meal = None
+    elif now > today11am and now <= today4pm:
+        meals = meals.filter(lunch=True)
+        slogan = "Your Lunch:"
+        if last_meal and not last_meal.lunch:
+            last_meal = None
+    elif now > today4pm and now <= today11pm:
+        meals = meals.filter(dinner=True)
+        slogan = "Your Dinner:"
+        if last_meal and not last_meal.dinner:
+            last_meal = None
+    else:
+        slogan = "Go To Sleep!"
 
 def get_random(query_set):
     return query_set.order_by('?')
