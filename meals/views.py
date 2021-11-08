@@ -10,6 +10,7 @@ from django.http import HttpResponse, request
 from django.views.generic.list import ListView
 from django.contrib.auth.decorators import login_required, permission_required, user_passes_test
 from django.utils import timezone
+from django.urls import reverse
 
 # if you change your restrictions to something that doesnt allow a meal you have in favourites it'll break
 
@@ -46,10 +47,27 @@ def order_by_pk(arr, pk_arr):
 
     return pk_arr
 
+def get_filtered_meals():
+    user_info = get_user_info(request.user)
+    user_restriction_ids = user_info.restrictions.values_list("pk",flat=True)
+    meals = Meal.objects.all()
+
+    for id in user_restriction_ids:
+        meals = meals.filter(restrictions__id=id)
+
+def get_random(query_set):
+    return query_set.order_by('?')
+
+def redirect_to_random(request):
+    new_meals = get_random(Meal.objects.all())
+    url = reverse('home')
+    return redirect("{}?meal_pk={}".format(url,new_meals[0].pk))
+
 @login_required    
 def home_view(request):
 
     randomize = request.GET.get("randomize") #Query string
+    meal_pk = request.GET.get("meal_pk")
 
     user_info = get_user_info(request.user)
     user_restriction_ids = user_info.restrictions.values_list("pk",flat=True)
