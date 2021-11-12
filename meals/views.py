@@ -96,7 +96,6 @@ def home_view(request):
     today4am = now.replace(hour=4, minute=0, second=0, microsecond=0)
     today11am = now.replace(hour=11, minute=0, second=0, microsecond=0)
     today4pm = now.replace(hour=16, minute=0, second=0, microsecond=0)
-    today11pm = now.replace(hour=23, minute=0, second=0, microsecond=0)
 
     slogan = ""
 
@@ -110,13 +109,11 @@ def home_view(request):
         slogan = "Your Lunch:"
         if last_meal and not last_meal.lunch:
             last_meal = None
-    elif now > today4pm and now <= today11pm:
+    elif now > today4pm and now <= today4am:
         meals = meals.filter(dinner=True)
         slogan = "Your Dinner:"
         if last_meal and not last_meal.dinner:
             last_meal = None
-    else:
-        slogan = "Go To Sleep!"
 
     if last_meal:
         this_meal=last_meal
