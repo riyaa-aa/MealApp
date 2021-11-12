@@ -3,6 +3,7 @@ from django.http.response import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from .models import *
 from .forms import *
+import pytz
 import random
 import http
 from datetime import datetime, timedelta
@@ -47,14 +48,13 @@ def order_by_pk(arr, pk_arr):
 
     return pk_arr
 
-def get_filtered_meals():
-    user_info = get_user_info(request.user)
-    user_restriction_ids = user_info.restrictions.values_list("pk",flat=True)
-    meals = Meal.objects.all()
 
-    for id in user_restriction_ids:
-        meals = meals.filter(restrictions__id=id)
-    
+def get_meal_time():
+    utc_now = timezone.now()
+    # This could be derived from a setting the user selects
+    user_timezone = pytz.timezone('Etc/GMT+8')
+    now = utc_now.astimezone(user_timezone)
+
     now = datetime.now() + timedelta(hours=8) #To set to the right time.
 
     today4am = now.replace(hour=4, minute=0, second=0, microsecond=0)
@@ -62,126 +62,91 @@ def get_filtered_meals():
     today4pm = now.replace(hour=16, minute=0, second=0, microsecond=0)
     today11pm = now.replace(hour=23, minute=0, second=0, microsecond=0)
 
-    slogan = ""
-
+    meal_time = None
     if now <= today11am and now > today4am:
-        meals = meals.filter(breakfast=True)
-        slogan = "Your Breakfast:"
-        if last_meal and not last_meal.breakfast:
-            last_meal = None
+        meal_time = Meal.BREAKFAST
     elif now > today11am and now <= today4pm:
-        meals = meals.filter(lunch=True)
-        slogan = "Your Lunch:"
-        if last_meal and not last_meal.lunch:
-            last_meal = None
+        meal_time = Meal.LUNCH
     elif now > today4pm and now <= today11pm:
-        meals = meals.filter(dinner=True)
-        slogan = "Your Dinner:"
-        if last_meal and not last_meal.dinner:
-            last_meal = None
-    else:
-        slogan = "Go To Sleep!"
+        meal_time = Meal.DINNER
 
-def get_random(query_set):
-    return query_set.order_by('?')
+    return meal_time
 
-def redirect_to_random(request):
-    new_meals = get_random(Meal.objects.all())
-    url = reverse('home')
-    return redirect("{}?meal_pk={}".format(url,new_meals[0].pk))
 
-@login_required    
-def home_view(request):
-
-    randomize = request.GET.get("randomize") #Query string
-    meal_pk = request.GET.get("meal_pk")
-
-    user_info = get_user_info(request.user)
+def get_current_meal(user_info, randomize):
     user_restriction_ids = user_info.restrictions.values_list("pk",flat=True)
-
     meals = Meal.objects.all()
 
     for id in user_restriction_ids:
         meals = meals.filter(restrictions__id=id)
 
-    # meal_count = meals.count()
+    meal_time = get_meal_time()
 
-    #test
-    # meal_arr = []
-    # pk_arr = []
-    # first_meal = Meal.objects.first()
-    # first_pk = first_meal.pk
-    # str_meal_arr = ""
-    
-    # for i in range(meal_count):
-    #     meal_arr.append(meals.get(pk=first_pk+i))
-    #     pk_arr.append(first_pk+i)
-    
-    # str_meal_arr = ' '.join([str(item) for item in meal_arr])
+    # If we within a part of the day with a set meal time, filter meals
+    # for that meal time
+    if meal_time:
+        time_filter = {meal_time: True}
+        meals = meals.filter(**time_filter)
 
-    # test_arr = [3,6,2,8,4,9,1,10,5]
-    # test_meals = ["this", "is", "a", "test", "to", "see", "if", "this", "works"]
-
-    # get_ordered_pk = order_by_pk(test_meals,test_arr)
-    #endtest
-
-    # If the user exists and they have a last meal.
-    
     last_meal = None
 
     if randomize:
         meals = meals.order_by("?") #Order meals randomly
     else:
         meals = meals.order_by("pk") #Order meals by id
+        # Find the last meal the user viewed
         if user_info and user_info.lastMeal: 
             last_meal = meals.filter(pk=user_info.lastMeal.pk).first()
-        
-    now = datetime.now() + timedelta(hours=8) #To set to the right time.
 
-    today4am = now.replace(hour=4, minute=0, second=0, microsecond=0)
-    today11am = now.replace(hour=11, minute=0, second=0, microsecond=0)
-    today4pm = now.replace(hour=16, minute=0, second=0, microsecond=0)
-    today11pm = now.replace(hour=23, minute=0, second=0, microsecond=0)
-
-    slogan = ""
-
-    if now <= today11am and now > today4am:
-        meals = meals.filter(breakfast=True)
-        slogan = "Your Breakfast:"
-        if last_meal and not last_meal.breakfast:
-            last_meal = None
-    elif now > today11am and now <= today4pm:
-        meals = meals.filter(lunch=True)
-        slogan = "Your Lunch:"
-        if last_meal and not last_meal.lunch:
-            last_meal = None
-    elif now > today4pm and now <= today11pm:
-        meals = meals.filter(dinner=True)
-        slogan = "Your Dinner:"
-        if last_meal and not last_meal.dinner:
-            last_meal = None
-    else:
-        slogan = "Go To Sleep!"
+    # If the meal time of the last meal does not match the current meal time,
+    # do not use last meal.
+    if last_meal and not getattr(last_meal, meal_time):
+        last_meal = None  
 
     if last_meal:
-        this_meal=last_meal
+        this_meal = last_meal
     else:
         this_meal = meals.first() #taking the first meal in the variable 'meals' (if last meal exists, it will be the only meal in 'meals')
 
-    user_info.lastMeal=this_meal #the first meal in 'meals' will be the meal displayed, i.e. the one that needs to be stored to come back to.
+    user_info.lastMeal = this_meal #the first meal in 'meals' will be the meal displayed, i.e. the one that needs to be stored to come back to.
     user_info.save()
+
+    return this_meal
+
+
+def redirect_to_specific_meal(request):
+    user_info = get_user_info(request.user)
+    randomize = request.GET.get("randomize") #Query string
+    meal = get_current_meal(user_info, randomize)
+
+    url = reverse('home')
+    return redirect("{}?meal_pk={}".format(url, meal.pk))
+
+
+@login_required    
+def home_view(request):
+    # Shows a single meal based
+
+    meal_pk = request.GET.get("meal_pk")
+
+    # Home view should only ever be called for a specific meal
+    if not meal_pk:
+        return redirect(reverse("redirect_to_specific_meal"))
+
+    print(meal_pk)
+    this_meal = Meal.objects.get(pk=meal_pk)
+
+    meal_time = get_meal_time()
+    slogan = Meal.get_slogan(meal_time)
 
     #testing migration file
     ingredients_list = Meal.objects.values_list('ingredients')
 
     my_context = {
-        "meals": meals, 
-        "time": now, 
-        "today4am": today4am,
         "thisMeal": this_meal,
         # "count":meal_count, 
-        "slogan":slogan,
-        "ingList":ingredients_list,
+        "slogan": slogan,
+        "ingList": ingredients_list,
         # "test":str_meal_arr,
         # "test2":get_ordered_pk,
     }
@@ -309,7 +274,7 @@ def settings_view(request):
             user_info.user = request.user
             user_info.save()
             form.save_m2m()
-            return redirect('home')
+            return redirect('redirect_to_specific_meal')
         else:
             print("form isn't valid:", form.errors)
     my_context = {

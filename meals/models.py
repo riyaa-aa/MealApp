@@ -29,6 +29,10 @@ class Restriction(models.Model):
         return "{}".format(self.description)
 
 class Meal(models.Model):
+    BREAKFAST = "breakfast"
+    LUNCH = "lunch"
+    DINNER = "dinner"
+
     name = models.CharField(max_length=200)
     image = models.ImageField(upload_to = "media/")
     ingredients = models.TextField()
@@ -43,6 +47,13 @@ class Meal(models.Model):
 
     def __str__(self):
         return self.name
+
+    @staticmethod
+    def get_slogan(meal_time):
+        slogan = "Go To Sleep!"
+        if meal_time:
+            slogan = f"Your {meal_time.capitalize()}:"
+        return slogan
     
     def no_zero_ing(self):
         listIng = self.ingredients.split("\n")
