@@ -19,6 +19,7 @@ def get_user_info(user):
     user_info,created = UserInfo.objects.get_or_create(user=user) #Creating the user info object if it doesn't exist and then returning it.
     return user_info
 
+
 def order_by_pk(arr, pk_arr):
     temp = 0
     sorted_pk = pk_arr

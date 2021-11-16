@@ -46,7 +46,7 @@
                                 src="{{thisMeal.image.url}}"
                                 class="imgHover">
                                 <div class="middle">
-                                    <div class="middleLink"><a href="/browse/{{thisMeal.id}}">See More</a></div>
+                                    <div class="middleLink"><a href="{% url 'mealObject' thisMeal.pk %}">See More</a></div>
                                 </div>
                             </div>
                         <p>
