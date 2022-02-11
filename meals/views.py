@@ -38,13 +38,16 @@ def get_meal_time():
 
     return meal_time
 
+def get_filtered_meals(meals, restriction_ids):
+    for id in restriction_ids:
+        meals = meals.filter(restrictions__id=id)
+    return meals
 
 def get_current_meal(user_info, randomize):
     user_restriction_ids = user_info.restrictions.values_list("pk",flat=True)
     meals = m.Meal.objects.all()
 
-    for id in user_restriction_ids:
-        meals = meals.filter(restrictions__id=id)
+    meals = get_filtered_meals(meals, user_restriction_ids)
 
     meal_time = get_meal_time()
 
@@ -211,14 +214,12 @@ def favorites_add(request, id):
 @login_required 
 def favorites_view(request):
     new = m.Meal.objects.filter(favorited=request.user)
-    numFaves = new.count()
     form = f.Restrictions(request.GET)
-    print(form)
     restriction_ids = request.GET.getlist("restrictions")
-    print(restriction_ids
-    )
-    for id in restriction_ids:
-        new = new.filter(restrictions__id=id)
+
+    new = get_filtered_meals(new, restriction_ids)
+
+    numFaves = new.count()
 
     my_context={"new":new, "numFaves":numFaves, "form":form}
     return render(request, "favorites.html", my_context)
