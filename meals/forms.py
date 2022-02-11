@@ -21,3 +21,10 @@ class Restrictions(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['restrictions'].label = ""
+
+class SortBy(forms.Form):
+    CHOICES = [
+        ["","Date favorited"],
+        ["name","Alphabetical"]
+    ]
+    sort_by = forms.ChoiceField(choices=CHOICES, required=False)

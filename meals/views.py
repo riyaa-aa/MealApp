@@ -216,12 +216,17 @@ def favorites_view(request):
     new = m.Meal.objects.filter(favorited=request.user)
     form = f.Restrictions(request.GET)
     restriction_ids = request.GET.getlist("restrictions")
+    
+    sort_form = f.SortBy(request.GET)
+    sort_by = request.GET.get("sort_by")
+    if sort_by:
+        new = new.order_by(sort_by)
 
     new = get_filtered_meals(new, restriction_ids)
 
     numFaves = new.count()
 
-    my_context={"new":new, "numFaves":numFaves, "form":form}
+    my_context={"new":new, "numFaves":numFaves, "form":form, "sort_form":sort_form}
     return render(request, "favorites.html", my_context)
 
 

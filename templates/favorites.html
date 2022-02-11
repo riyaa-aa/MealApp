@@ -19,6 +19,7 @@
         <form method="get" style="margin-left: 20px; margin-top: 20px">
             <h2 style="text-align: left; margin-left: 0px;" title="Choose the restriction that applies.">Filter by</h2>
                 <p style="text-align: left;">{{ form.restrictions|as_crispy_field }}</p>
+                <p>{{ sort_form }}</p>
                 <button type="submit" class="btn btn-success">Go</button>
         </form>
 
