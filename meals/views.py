@@ -191,11 +191,15 @@ def ingredients_add(request, id):
 @login_required 
 def ingredients_view(request):
     saved_meals = m.Meal.objects.filter(saved=request.user)
-    meal_ingredients = []
+    meal_ingredients = [] # to-do: make this a list of the quantity ingredient tuples
     for meal in saved_meals:
         meal.generate_user_ingredients(request.user)
         user_ingredients = m.UserIngredient.objects.filter(user=request.user, ingredient__meal=meal, status=m.UserIngredient.STATUS_NEW)
+        # to-do: iterate over user_ingredients calling split_name on each associated ingredient
+        # append those to meal_ingredients
         meal_ingredients.append(user_ingredients)
+    # to-do: call sorted on meal_ingredients telling it to sort by the second item in the tuple
+    # look up python sorted
     num_saved = saved_meals.count()
     my_context={"new":saved_meals, "numSaved":num_saved, "mealIng":meal_ingredients}
     return render(request, "ingredients.html", my_context)
