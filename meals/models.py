@@ -10,6 +10,8 @@ from django.db.models.enums import Choices
 from django.core import validators
 from django.db.models.signals import post_save
 
+import re
+
 # Create your models here.
 
 #ingredient model --> name field to store the name of the ingredient
@@ -91,6 +93,14 @@ class Ingredient(models.Model):
 
     def __str__(self):
         return "{} ({})".format(self.name, self.meal)
+
+    def split_name(self):
+        pattern = r"(([0-9/ ]+ )?(cups?|teaspoons?|tablespoons?|pounds?|ounces?|small|large|cloves?|medium|grams?|litres? )?)"
+        matches = re.match(pattern, self.name)
+        quantity = matches.group(0)
+        ingredient = self.name[matches.end():] # going to the end index of the span to the end of the string, which should just be the ingredient
+
+        return (quantity,ingredient)
 
 class UserIngredient(models.Model):
     STATUS_NEW = "new"
