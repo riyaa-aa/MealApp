@@ -28,7 +28,8 @@ urlpatterns = [
     path("signup/", v.signup, name = 'signup'),
     path('', include('django.contrib.auth.urls')),
     path('api-auth/', include('rest_framework.urls')),
-    path('', include('meals.urls'))
+    path('', include('meals.urls')),
+    path('logout/', v.signup, name='logout')
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT) + static(settings.STATIC_URL, document_root = settings.STATIC_ROOT)
 
 

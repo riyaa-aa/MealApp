@@ -4,29 +4,23 @@
 
 {% load static %}
 
+{% load static crispy_forms_tags %}
+
 <link rel="stylesheet" href="{% static 'css/main.css' %}">
 
 {% if user.is_authenticated%}
-
-    <!--<style>
-        h1 {
-        color: rgb(3, 97, 11);
-        font-weight: 500;
-        font-weight: bold;
-        font-size: 300%;
-        padding: 20px;
-        margin-right: 300px;
-        margin-left: 300px;
-        text-align: center;
-        margin-top: 0px;
-        }
-    </style>-->
 
         <h1>Favorites</h1> 
 
         <h2 style="text-align: center;">{{numFaves}} meals</h2>
 
         <br>
+
+        <form method="get" style="margin-left: 20px; margin-top: 20px">
+            <h2 style="text-align: left; margin-left: 0px;" title="Choose the restriction that applies.">Filter by</h2>
+                <p style="text-align: left;">{{ form.restrictions|as_crispy_field }}</p>
+                <button type="submit" class="btn btn-success">Go</button>
+        </form>
 
         <div class="container">
             <div class="row">
@@ -36,7 +30,7 @@
                     <div class="col-sm">
                         <p style="text-align: center; font-size: 20px; font-weight: bold;">{{faveMeal.name}}</p>
                         <p>
-                            <a href="/browse/{{faveMeal.id}}">
+                            <a href="{% url 'mealObject' faveMeal.pk %}">
                                 <img 
                                 style = 
                                 "width:300px; 
@@ -50,7 +44,7 @@
                         </p>
                         <p style="text-align: center;">
                             <button class="btn btn-outline-success" id="fav_add">
-                                <a href="{% url 'favorite_add' faveMeal.id%}">
+                                <a href="{% url 'favorite_add' faveMeal.id %}">
                                     Remove
                                 </a>
                             </button>
@@ -63,7 +57,7 @@
 
 
 {% else %}
-    <p class="loggedOut">Please Login <a href="/login">here!</a></p>
+    <p class="loggedOut">Please Login <a href="{% url 'login' %}">here!</a></p>
 {% endif %}
 {% endblock content%} 
 

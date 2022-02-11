@@ -2,11 +2,11 @@ from django.contrib import admin
 
 # Register your models here.
 
-from .models import *
+from meals import models as m
 
-admin.site.register(Meal)
-admin.site.register(Weight)
-admin.site.register(UserInfo)
-admin.site.register(Ingredient)
-admin.site.register(UserIngredient)
-admin.site.register(Restriction)
+admin.site.register(m.Meal)
+admin.site.register(m.Weight)
+admin.site.register(m.UserInfo)
+admin.site.register(m.Ingredient)
+admin.site.register(m.UserIngredient)
+admin.site.register(m.Restriction)

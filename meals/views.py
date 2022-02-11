@@ -1,151 +1,129 @@
-from django.db.models.fields.files import ImageField
 from django.http.response import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
-from .models import *
-from .forms import *
-import random
-import http
+from meals import models as m
+from meals import forms as f
+import pytz
 from datetime import datetime, timedelta
-from django.http import HttpResponse, request
-from django.views.generic.list import ListView
-from django.contrib.auth.decorators import login_required, permission_required, user_passes_test
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils import timezone
+from django.urls import reverse
 
-# if you change your restrictions to something that doesnt allow a meal you have in favourites it'll break
+# logging out breaks the whole thing lol
 
 def get_user_info(user):
-    user_info,created = UserInfo.objects.get_or_create(user=user) #Creating the user info object if it doesn't exist and then returning it.
+    user_info,created = m.UserInfo.objects.get_or_create(user=user) #Creating the user info object if it doesn't exist and then returning it.
     return user_info
 
-def order_by_pk(arr, pk_arr):
-    temp = 0
-    sorted_pk = pk_arr
-    sorted_arr = arr
-    min_index = 0
-    arr = arr
-    pk_arr = pk_arr
 
-    for i in range(len(pk_arr)):
-        min_index = i
-        for x in range(i+1, len(pk_arr)):
-            if pk_arr[min_index] > pk_arr[x]:
-                min_index = x
-        temp = pk_arr[min_index]
-        sorted_pk[min_index] = sorted_pk[i]
-        sorted_pk[i] = temp
-        #sorted_pk[i], sorted_pk[min_index] = sorted_pk[min_index], sorted_pk[i]
+def get_meal_time():
+    utc_now = timezone.now()
+    # This could be derived from a setting the user selects
+    user_timezone = pytz.timezone('Etc/GMT+8')
+    now = utc_now.astimezone(user_timezone)
 
-    test_arr=[]
-    for j in range(len(sorted_pk)):
-        for k in range(j,len(sorted_pk)):
-            if sorted_pk[j] == pk_arr[k]:
-                test_arr.append(2)
-                temp = 2
-                sorted_arr[j] = arr[k]
-                #arr[j],arr[k] = arr[k],arr[j]
+    now = datetime.now() + timedelta(hours=8) #To set to the right time.
 
-    return pk_arr
+    today4am = now.replace(hour=4, minute=0, second=0, microsecond=0)
+    today11am = now.replace(hour=11, minute=0, second=0, microsecond=0)
+    today4pm = now.replace(hour=16, minute=0, second=0, microsecond=0)
+    today11pm = now.replace(hour=23, minute=0, second=0, microsecond=0)
 
-@login_required    
-def home_view(request):
+    meal_time = None
+    if now <= today11am and now > today4am:
+        meal_time = m.Meal.BREAKFAST
+    elif now > today11am and now <= today4pm:
+        meal_time = m.Meal.LUNCH
+    elif now > today4pm and now <= today11pm:
+        meal_time = m.Meal.DINNER
 
-    randomize = request.GET.get("randomize") #Query string
+    return meal_time
 
-    user_info = get_user_info(request.user)
+
+def get_current_meal(user_info, randomize):
     user_restriction_ids = user_info.restrictions.values_list("pk",flat=True)
-
-    meals = Meal.objects.all()
+    meals = m.Meal.objects.all()
 
     for id in user_restriction_ids:
         meals = meals.filter(restrictions__id=id)
 
-    # meal_count = meals.count()
+    meal_time = get_meal_time()
 
-    #test
-    # meal_arr = []
-    # pk_arr = []
-    # first_meal = Meal.objects.first()
-    # first_pk = first_meal.pk
-    # str_meal_arr = ""
-    
-    # for i in range(meal_count):
-    #     meal_arr.append(meals.get(pk=first_pk+i))
-    #     pk_arr.append(first_pk+i)
-    
-    # str_meal_arr = ' '.join([str(item) for item in meal_arr])
+    # If we within a part of the day with a set meal time, filter meals
+    # for that meal time
+    if meal_time:
+        time_filter = {meal_time: True}
+        meals = meals.filter(**time_filter)
 
-    # test_arr = [3,6,2,8,4,9,1,10,5]
-    # test_meals = ["this", "is", "a", "test", "to", "see", "if", "this", "works"]
-
-    # get_ordered_pk = order_by_pk(test_meals,test_arr)
-    #endtest
-
-    # If the user exists and they have a last meal.
-    
     last_meal = None
 
     if randomize:
         meals = meals.order_by("?") #Order meals randomly
     else:
         meals = meals.order_by("pk") #Order meals by id
+        # Find the last meal the user viewed
         if user_info and user_info.lastMeal: 
             last_meal = meals.filter(pk=user_info.lastMeal.pk).first()
-        
-    now = datetime.now() + timedelta(hours=8) #To set to the right time.
 
-    today4am = now.replace(hour=4, minute=0, second=0, microsecond=0)
-    today11am = now.replace(hour=11, minute=0, second=0, microsecond=0)
-    today4pm = now.replace(hour=16, minute=0, second=0, microsecond=0)
-
-    slogan = ""
-
-    if now <= today11am and now > today4am:
-        meals = meals.filter(breakfast=True)
-        slogan = "Your Breakfast:"
-        if last_meal and not last_meal.breakfast:
-            last_meal = None
-    elif now > today11am and now <= today4pm:
-        meals = meals.filter(lunch=True)
-        slogan = "Your Lunch:"
-        if last_meal and not last_meal.lunch:
-            last_meal = None
-    elif now > today4pm and now <= today4am:
-        meals = meals.filter(dinner=True)
-        slogan = "Your Dinner:"
-        if last_meal and not last_meal.dinner:
-            last_meal = None
+    # If the meal time of the last meal does not match the current meal time,
+    # do not use last meal.
+    if last_meal and not getattr(last_meal, meal_time):
+        last_meal = None  
 
     if last_meal:
-        this_meal=last_meal
+        this_meal = last_meal
     else:
         this_meal = meals.first() #taking the first meal in the variable 'meals' (if last meal exists, it will be the only meal in 'meals')
 
-    user_info.lastMeal=this_meal #the first meal in 'meals' will be the meal displayed, i.e. the one that needs to be stored to come back to.
+    user_info.lastMeal = this_meal #the first meal in 'meals' will be the meal displayed, i.e. the one that needs to be stored to come back to.
     user_info.save()
 
+    return this_meal
+
+
+@login_required
+def redirect_to_specific_meal(request):
+    user_info = get_user_info(request.user)
+    randomize = request.GET.get("randomize") #Query string
+    meal = get_current_meal(user_info, randomize)
+
+    url = reverse('home')
+    return redirect("{}?meal_pk={}".format(url, meal.pk))
+
+
+@login_required    
+def home_view(request):
+    # Shows a single meal based
+
+    meal_pk = request.GET.get("meal_pk")
+
+    # Home view should only ever be called for a specific meal
+    if not meal_pk:
+        return redirect(reverse("redirect_to_specific_meal"))
+
+    print(meal_pk)
+    this_meal = m.Meal.objects.get(pk=meal_pk)
+
+    meal_time = get_meal_time()
+    slogan = m.Meal.get_slogan(meal_time)
+
     #testing migration file
-    ingredients_list = Meal.objects.values_list('ingredients')
+    ingredients_list = m.Meal.objects.values_list('ingredients')
 
     my_context = {
-        "meals": meals, 
-        "time": now, 
-        "today4am": today4am,
         "thisMeal": this_meal,
-        # "count":meal_count, 
-        "slogan":slogan,
-        "ingList":ingredients_list,
-        # "test":str_meal_arr,
-        # "test2":get_ordered_pk,
+        "slogan": slogan,
+        "ingList": ingredients_list,
     }
     
     return render(request, "home.html", my_context)
 
+
 @login_required 
 def weight_view(request):
-    weights = Weight.objects.filter(user=request.user).order_by('date')
+    weights = m.Weight.objects.filter(user=request.user).order_by('date')
     todays_date = timezone.now().date()
-    todays_weight = Weight.objects.filter(user=request.user, date=todays_date).first()
-    form = WeightTracker(instance=todays_weight)
+    todays_weight = m.Weight.objects.filter(user=request.user, date=todays_date).first()
+    form = f.WeightTracker(instance=todays_weight)
 
     weight_chart_data = []
     # If there is at least one weight entry, create chart data
@@ -176,7 +154,7 @@ def weight_view(request):
     print(weight_chart_data)
 
     if request.method == "POST":
-        form = WeightTracker(request.POST, instance=todays_weight)
+        form = f.WeightTracker(request.POST, instance=todays_weight)
             # code for making them able to edit the date?
         if form.is_valid():
             user_weight = form.save(commit=False)
@@ -196,72 +174,87 @@ def weight_view(request):
     }
     return render(request, "weight.html", my_context)
 
+
 @login_required 
 def ingredients_add(request, id):
-    savedMeal = get_object_or_404(Meal, id=id)
+    savedMeal = get_object_or_404(m.Meal, id=id)
     if savedMeal.saved.filter(id=request.user.id).exists():
         savedMeal.saved.remove(request.user)
     else:
         savedMeal.saved.add(request.user)
     return HttpResponseRedirect(request.META['HTTP_REFERER'])
 
+
 @login_required 
 def ingredients_view(request):
-    saved_meals = Meal.objects.filter(saved=request.user)
+    saved_meals = m.Meal.objects.filter(saved=request.user)
     meal_ingredients = []
     for meal in saved_meals:
         meal.generate_user_ingredients(request.user)
-        user_ingredients = UserIngredient.objects.filter(user=request.user, ingredient__meal=meal, status=UserIngredient.STATUS_NEW)
+        user_ingredients = m.UserIngredient.objects.filter(user=request.user, ingredient__meal=meal, status=m.UserIngredient.STATUS_NEW)
         meal_ingredients.append(user_ingredients)
     num_saved = saved_meals.count()
     my_context={"new":saved_meals, "numSaved":num_saved, "mealIng":meal_ingredients}
     return render(request, "ingredients.html", my_context)
 
+
 @login_required 
 def favorites_add(request, id):
-    favedMeal = get_object_or_404(Meal, id=id)
+    favedMeal = get_object_or_404(m.Meal, id=id)
     if favedMeal.favorited.filter(id=request.user.id).exists():
         favedMeal.favorited.remove(request.user)
     else:
         favedMeal.favorited.add(request.user)
     return HttpResponseRedirect(request.META['HTTP_REFERER'])
 
+
 @login_required 
 def favorites_view(request):
-    new = Meal.objects.filter(favorited=request.user)
+    new = m.Meal.objects.filter(favorited=request.user)
     numFaves = new.count()
-    my_context={"new":new, "numFaves":numFaves}
+    form = f.Restrictions(request.GET)
+    print(form)
+    restriction_ids = request.GET.getlist("restrictions")
+    print(restriction_ids
+    )
+    for id in restriction_ids:
+        new = new.filter(restrictions__id=id)
+
+    my_context={"new":new, "numFaves":numFaves, "form":form}
     return render(request, "favorites.html", my_context)
 
-@user_passes_test(check_admin) 
+
+@user_passes_test(m.check_admin) 
 def browseMeals_view(response):
-    meals = Meal.objects.all()
+    meals = m.Meal.objects.all()
     count = 2
     my_context = {"meals":meals, "count":count}
     return render(response, "browse.html", my_context)
 
+
 @login_required 
 def meal_list_view(response, pk):
-    mealObj = Meal.objects.get(id=pk)
-    if Meal.objects.get(id=pk):
-        nextmealObj = Meal.objects.get(id=pk)
+    mealObj = m.Meal.objects.get(id=pk)
+    if m.Meal.objects.get(id=pk):
+        nextmealObj = m.Meal.objects.get(id=pk)
         #nextmealObj = Meal.objects.get(id=pk+1)
     else:
-        nextmealObj = Meal.objects.first()
+        nextmealObj = m.Meal.objects.first()
     my_context={'mealObj':mealObj, 'nextMeal':nextmealObj}
     return render(response, "mealList.html", my_context)
 
+
 @login_required 
 def settings_view(request):
-    form = Restrictions(instance=request.user.uInfo) # making sure that pre-saved restrictions appear
+    form = f.Restrictions(instance=request.user.uInfo) # making sure that pre-saved restrictions appear
     if request.method == "POST":
-        form = Restrictions(request.POST,instance=request.user.uInfo)
+        form = f.Restrictions(request.POST,instance=request.user.uInfo)
         if form.is_valid():
             user_info = form.save(commit=False) # prevents from saving to database since we don't know the user yet
             user_info.user = request.user
             user_info.save()
             form.save_m2m()
-            return redirect('home')
+            return redirect('redirect_to_specific_meal')
         else:
             print("form isn't valid:", form.errors)
     my_context = {
@@ -269,9 +262,10 @@ def settings_view(request):
     }
     return render(request, "settings.html", my_context)
 
+
 @login_required 
 def navbar_view(request):
-    new = Meal.objects.filter(favorited=request.user)
+    new = m.Meal.objects.filter(favorited=request.user)
     numFaves = new.count()
     my_context={"numFaves":numFaves}
     return render(request, "base.html", my_context)
