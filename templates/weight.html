@@ -68,14 +68,6 @@ Weight Tracker
         
     </form>
 
-    {% for w in weights %}
-
-        <p>{{w.weight}}</p>
-        <p>{{user.username}}</p>
-        <p>{{w.time}}</p>
-
-    {% endfor %}
-
 {% else %}
     <p class="loggedOut">Please Login <a href="/login">here!</a></p>
 {% endif %}

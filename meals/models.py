@@ -1,7 +1,7 @@
+from django.contrib.auth.decorators import login_required
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
-import random
 import datetime, time
 from datetime import timedelta
 
@@ -50,7 +50,7 @@ class Meal(models.Model):
 
     @staticmethod
     def get_slogan(meal_time):
-        slogan = "Go To Sleep!"
+        slogan = "Your Meal:"
         if meal_time:
             slogan = f"Your {meal_time.capitalize()}:"
         return slogan
@@ -105,7 +105,7 @@ class UserIngredient(models.Model):
 
 class Weight(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="weight", null=True)
-    weight = models.FloatField(validators=[validators.MinValueValidator(20), validators.MaxValueValidator(500)])
+    weight = models.FloatField(validators=[validators.MinValueValidator(20), validators.MaxValueValidator(600)])
     date = models.DateField(default=datetime.date.today)
 
     class Meta:
@@ -131,6 +131,7 @@ class UserInfo(models.Model):
 
     def __str__(self):
         return "{} {}".format(self.user, list(self.restrictions.all().values_list('description',flat=True)))
+
 
 def check_admin(user):
     return user.is_superuser

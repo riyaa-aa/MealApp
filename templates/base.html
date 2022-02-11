@@ -21,14 +21,12 @@
     
     <body>
             <div class = "sidenav">
-                <a href="/redirect_to_specific_meal/">Home</a>
-                <a href="/weight">Weight Tracker</a>
-                <a href="/ingredients">Ingredients</a>
-                <a href="/favorites">Favorites</a>
-                <a href="/settings">Settings</a>
-                {% if request.user.pk|user_is_admin %}
-                    <a href="{% url 'browse' %}">Browse Meals</a>
-                {% endif %}
+                <a href="{% url 'redirect_to_specific_meal' %}">Home</a>
+                <a href="{% url 'weight' %}">Weight Tracker</a>
+                <a href="{% url 'ingredients' %}">Ingredients</a>
+                <a href="{% url 'favorites' %}">Favorites</a>
+                <a href="{% url 'settings' %}">Settings</a>
+                <a href="{% url 'browse' %}">Browse Meals</a>
             </div>
 
         <div class = "main">

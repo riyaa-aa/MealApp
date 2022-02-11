@@ -6,8 +6,8 @@ from rest_framework import routers
 router = routers.DefaultRouter()
 router.register(r'user_ingredients', view_sets.UserIngredientViewSet)
 
-# Wire up our API using automatic URL routing.
-# Additionally, we include login URLs for the browsable API.
+# Wire up the API using automatic URL routing.
+# Include login URLs for the browsable API.
 urlpatterns = [
     path('api/', include(router.urls)),
     path('redirect_to_specific_meal/', views.redirect_to_specific_meal,
