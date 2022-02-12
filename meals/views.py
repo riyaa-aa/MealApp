@@ -38,10 +38,12 @@ def get_meal_time():
 
     return meal_time
 
+
 def get_filtered_meals(meals, restriction_ids):
     for id in restriction_ids:
         meals = meals.filter(restrictions__id=id)
     return meals
+
 
 def get_current_meal(user_info, randomize):
     user_restriction_ids = user_info.restrictions.values_list("pk",flat=True)
@@ -195,11 +197,23 @@ def ingredients_view(request):
     for meal in saved_meals:
         meal.generate_user_ingredients(request.user)
         user_ingredients = m.UserIngredient.objects.filter(user=request.user, ingredient__meal=meal, status=m.UserIngredient.STATUS_NEW)
+        for ing in user_ingredients:
+            split_ing = ing.ingredient.split_name()
+            ingredient_dictionary = {
+                "id":ing.id,
+                "quantity":split_ing[0],
+                "ingredient":split_ing[1]
+            }
+            meal_ingredients.append(ingredient_dictionary)
         # to-do: iterate over user_ingredients calling split_name on each associated ingredient
         # append those to meal_ingredients
-        meal_ingredients.append(user_ingredients)
+        # meal_ingredients.append(user_ingredients)
     # to-do: call sorted on meal_ingredients telling it to sort by the second item in the tuple
     # look up python sorted
+    print(meal_ingredients)
+    meal_ingredients = sorted(meal_ingredients,key=lambda x:x["ingredient"]) # lambda is a function, will be called on each element as its sorting
+    print(meal_ingredients)
+
     num_saved = saved_meals.count()
     my_context={"new":saved_meals, "numSaved":num_saved, "mealIng":meal_ingredients}
     return render(request, "ingredients.html", my_context)

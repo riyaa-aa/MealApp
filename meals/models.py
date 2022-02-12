@@ -95,12 +95,13 @@ class Ingredient(models.Model):
         return "{} ({})".format(self.name, self.meal)
 
     def split_name(self):
-        pattern = r"(([0-9/ ]+ )?(cups?|teaspoons?|tablespoons?|pounds?|ounces?|small|large|cloves?|medium|grams?|litres? )?)"
+        pattern = r"(([0-9/ ]+ )?(cups?|teaspoons?|tsps?|tablespoons?|tbsps?|pounds?|ounces?|small|large|cloves?|medium|grams?|litres? )?)"
+          # the ? means the character immediatley before it is optional
         matches = re.match(pattern, self.name)
-        quantity = matches.group(0)
+        quantity = matches.group(0) # the first group in pattern, which should for example be "4 cups" or "1 tbsp"
         ingredient = self.name[matches.end():] # going to the end index of the span to the end of the string, which should just be the ingredient
 
-        return (quantity,ingredient)
+        return (quantity.strip(),ingredient.strip())
 
 class UserIngredient(models.Model):
     STATUS_NEW = "new"
