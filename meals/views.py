@@ -1,3 +1,4 @@
+from email.policy import default
 from django.http.response import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from meals import models as m
@@ -194,6 +195,10 @@ def ingredients_add(request, id):
 def ingredients_view(request):
     saved_meals = m.Meal.objects.filter(saved=request.user)
     meal_ingredients = [] # to-do: make this a list of the quantity ingredient tuples
+
+    sort_form = f.SortIngredients(request.GET)
+    sort_ings = request.GET.get("sort_by", default="id")
+
     for meal in saved_meals:
         meal.generate_user_ingredients(request.user)
         user_ingredients = m.UserIngredient.objects.filter(user=request.user, ingredient__meal=meal, status=m.UserIngredient.STATUS_NEW)
@@ -202,7 +207,8 @@ def ingredients_view(request):
             ingredient_dictionary = {
                 "id":ing.id,
                 "quantity":split_ing[0],
-                "ingredient":split_ing[1]
+                "ingredient":split_ing[1],
+                "lower_ingredient": split_ing[1].lower()
             }
             meal_ingredients.append(ingredient_dictionary)
         # to-do: iterate over user_ingredients calling split_name on each associated ingredient
@@ -211,11 +217,11 @@ def ingredients_view(request):
     # to-do: call sorted on meal_ingredients telling it to sort by the second item in the tuple
     # look up python sorted
     print(meal_ingredients)
-    meal_ingredients = sorted(meal_ingredients,key=lambda x:x["ingredient"]) # lambda is a function, will be called on each element as its sorting
+    meal_ingredients = sorted(meal_ingredients,key=lambda x:x[sort_ings]) # lambda is a function, will be called on each element as its sorting
     print(meal_ingredients)
 
     num_saved = saved_meals.count()
-    my_context={"new":saved_meals, "numSaved":num_saved, "mealIng":meal_ingredients}
+    my_context={"new":saved_meals, "numSaved":num_saved, "mealIng":meal_ingredients, "sort_form":sort_form}
     return render(request, "ingredients.html", my_context)
 
 

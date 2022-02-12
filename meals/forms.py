@@ -28,3 +28,10 @@ class SortBy(forms.Form):
         ["name","Alphabetical"]
     ]
     sort_by = forms.ChoiceField(choices=CHOICES, required=False)
+
+class SortIngredients(forms.Form):
+    CHOICES = [
+        ("id","Date added"),
+        ("lower_ingredient","Ingredient")
+    ]
+    sort_by = forms.ChoiceField(choices=CHOICES, required=False)

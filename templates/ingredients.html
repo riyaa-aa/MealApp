@@ -9,6 +9,11 @@
 {% if user.is_authenticated %}
     <h1>Ingredients</h1> 
 
+    <form method="get" style="margin-left: 20px; margin-top: 20px">
+            <p>{{ sort_form }}</p>
+            <button type="submit" class="btn btn-success">Go</button>
+    </form>
+
     <form id="ingredient_form"> 
     {% csrf_token %}
         {% for ingredient in mealIng %}
