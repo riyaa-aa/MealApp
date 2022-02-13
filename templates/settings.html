@@ -9,15 +9,12 @@
 {% if user.is_authenticated %}
     <h1>Settings</h1>
     
-    <form method="post" style="margin-left: 20px; margin-top: 20px"> {%csrf_token%}
+    <form method="post" style="margin-left: 20px; margin-top: 20px;"> {%csrf_token%}
         <h2 style="text-align: left; margin-left: 0px;" title="Choose the restriction that applies.">Restrictions</h2>
             <p style="text-align: left;">{{ form.restrictions|as_crispy_field }}</p>
             <button type="submit" name="save" class="btn btn-success">Save</button>
     </form>
-    <form>
-        Dietary Strictness
-    </form>
-    
+    <br>
     <p> Logout <a href="/logout" style="color:green">here!</a></p>
 
 {% else %}

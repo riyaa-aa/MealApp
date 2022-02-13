@@ -204,3 +204,20 @@ p {
     content: '- Show Less';
 }*/
 
+.horizontal_checkboxes .form-check {
+    display: inline-block;
+    padding-right: 1em;
+    text-align: left;
+}
+
+.sort_faves label{
+    padding-top: 1em;
+    margin-right: 0.5em;
+    padding-bottom: 1em;
+}
+
+.sort_ings label{
+    padding-top: 1em;
+    margin-right: 0.5em;
+    padding-bottom: 1em;
+}
