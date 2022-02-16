@@ -14,16 +14,6 @@ import re
 
 # Create your models here.
 
-#ingredient model --> name field to store the name of the ingredient
-#foreign key back to meal
-#each ingredient will relate to one single Meal 
-#each person has their own way of interacting with those ingredients
-#way of keeping track of user ingredient <= different model
-    #foreign key to ingredient(/foreign key to meal) and a foreign key to user
-    #at least one other field to track status: choice field
-        #two statuses: default status (new) which shows up on the page when no one has interacted with it
-        #other status (purchased) 
-
 class Restriction(models.Model):
     description = models.CharField(max_length=300, unique=True)
 
@@ -128,14 +118,6 @@ class Weight(models.Model):
         return "{} {} {}".format(self.user, self.weight, self.date)
 
 class UserInfo(models.Model):
-    RESTRICTIONS = [
-        ('vegan', 'vegan'),
-        ('vegetarian', 'vegetarian'),
-        ('pescatarian', 'pescatarian'),
-        ('glutenfree', 'glutenfree'),
-        ('lactose', 'lactose'),
-        ('nuts', 'nuts'),
-    ]
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="uInfo")
     lastMeal = models.ForeignKey(Meal, on_delete=models.CASCADE, related_name="lastMealViewed", blank=True, null=True)
     restrictions = models.ManyToManyField(Restriction, related_name="user_restrictions", blank=True)

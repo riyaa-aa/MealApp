@@ -18,14 +18,14 @@
 
         <h2 style="text-align: left; margin-left: 0px;" title="Choose the restriction that applies.">
             Filter & Sort 
-            <a href="#filter" data-bs-toggle="collapse" style="color: black; padding-left: 0.5em;">
+            <a href="#filter" class="expand_collapse_link" data-bs-toggle="collapse" style="color: black; padding-left: 0.5em;">
                 <i class="fas fa-angle-down"></i>
             </a>
         </h2>
         <div id="filter" class="collapse">
             <form method="get" style="margin-left: 20px; margin-top: 20px">
                     <div class="horizontal_checkboxes">
-                        FILTER BY: {{ form|crispy}}
+                        Filter by: {{ form|crispy}}
                     </div>
                     <div class="sort_faves">{{ sort_form }}</div>
                     <button type="submit" class="btn btn-success">Go</button>

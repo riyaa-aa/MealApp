@@ -221,3 +221,7 @@ p {
     margin-right: 0.5em;
     padding-bottom: 1em;
 }
+
+.sort_faves label {
+    font-weight: bold;
+}
