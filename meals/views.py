@@ -9,8 +9,6 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils import timezone
 from django.urls import reverse
 
-# logging out breaks the whole thing lol
-
 def get_user_info(user):
     user_info,created = m.UserInfo.objects.get_or_create(user=user) #Creating the user info object if it doesn't exist and then returning it.
     return user_info
@@ -23,18 +21,19 @@ def get_meal_time():
     now = utc_now.astimezone(user_timezone)
 
     now = datetime.now() + timedelta(hours=8) #To set to the right time.
+    tomorrow = datetime.now() + timedelta(hours=32)
 
     today4am = now.replace(hour=4, minute=0, second=0, microsecond=0)
     today11am = now.replace(hour=11, minute=0, second=0, microsecond=0)
     today4pm = now.replace(hour=16, minute=0, second=0, microsecond=0)
-    today11pm = now.replace(hour=23, minute=0, second=0, microsecond=0)
+    tomorrow4am = tomorrow.replace(hour=4, minute=0, second=0, microsecond=0)
 
     meal_time = None
     if now <= today11am and now > today4am:
         meal_time = m.Meal.BREAKFAST
     elif now > today11am and now <= today4pm:
         meal_time = m.Meal.LUNCH
-    elif now > today4pm and now <= today11pm:
+    elif now > today4pm and now <= tomorrow4am:
         meal_time = m.Meal.DINNER
 
     return meal_time
@@ -47,12 +46,13 @@ def get_filtered_meals(meals, restriction_ids):
 
 
 def get_current_meal(user_info, randomize):
+    meal_time = get_meal_time()
+    print(type(meal_time))
     user_restriction_ids = user_info.restrictions.values_list("pk",flat=True)
     meals = m.Meal.objects.all()
 
     meals = get_filtered_meals(meals, user_restriction_ids)
-
-    meal_time = get_meal_time()
+    
 
     # If we within a part of the day with a set meal time, filter meals
     # for that meal time
@@ -186,15 +186,17 @@ def ingredients_add(request, id):
     savedMeal = get_object_or_404(m.Meal, id=id)
     if savedMeal.saved.filter(id=request.user.id).exists():
         savedMeal.saved.remove(request.user)
+        m.UserIngredient.objects.filter(user=request.user,ingredient__meal=savedMeal).delete()
     else:
         savedMeal.saved.add(request.user)
+   
     return HttpResponseRedirect(request.META['HTTP_REFERER'])
 
 
 @login_required 
 def ingredients_view(request):
     saved_meals = m.Meal.objects.filter(saved=request.user)
-    meal_ingredients = [] # to-do: make this a list of the quantity ingredient tuples
+    meal_ingredients = [] 
 
     sort_form = f.SortIngredients(request.GET)
     sort_ings = request.GET.get("sort_by", default="id")
@@ -211,12 +213,6 @@ def ingredients_view(request):
                 "lower_ingredient": split_ing[1].lower()
             }
             meal_ingredients.append(ingredient_dictionary)
-        # to-do: iterate over user_ingredients calling split_name on each associated ingredient
-        # append those to meal_ingredients
-        # meal_ingredients.append(user_ingredients)
-    # to-do: call sorted on meal_ingredients telling it to sort by the second item in the tuple
-    # look up python sorted
-    print(meal_ingredients)
     meal_ingredients = sorted(meal_ingredients,key=lambda x:x[sort_ings]) # lambda is a function, will be called on each element as its sorting
     print(meal_ingredients)
 
@@ -296,6 +292,6 @@ def settings_view(request):
 @login_required 
 def navbar_view(request):
     new = m.Meal.objects.filter(favorited=request.user)
-    numFaves = new.count()
-    my_context={"numFaves":numFaves}
+    num_faves = new.count()
+    my_context={"numFaves":num_faves}
     return render(request, "base.html", my_context)
